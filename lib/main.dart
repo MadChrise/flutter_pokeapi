@@ -2,9 +2,15 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+
+// TODO: Save Pokemon local on Device
+// TODO: Add Search for Pokemon
+// TODO: Find out how to use the SimpleDialog withina function to reduce code complexity
+// TODO: Create own files for Pokemon/Ability
 
 void main() {
   // debugPaintSizeEnabled = true;
