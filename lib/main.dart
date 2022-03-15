@@ -59,14 +59,55 @@ class Ability {
   final String url;
   final bool isHidden;
   final int slot;
+  bool _infosAlreadyFetched = false;
   String germaneName = '';
+  String germanFlavorText = '';
+  String germanDescription = '';
 
+  /// Generates a Ability from a given JSON-String
   Ability.fromJson(Map<String, dynamic> json)
       : name = json['ability']['name'],
         url = json['ability']['url'],
         isHidden = json['is_hidden'],
         slot = json['slot'];
 
+  /// Fetches further Information for the ability
+  Future<bool> fetchInfos() async {
+    if (_infosAlreadyFetched) {
+      return true;
+    }
+
+    var url = Uri.parse(this.url);
+    var response = await http.get(url);
+
+    // Search for the german Name of the ability
+    for (var entry in jsonDecode(response.body)['names']) {
+      if (entry['language']['name'] == 'de') {
+        germaneName = entry['name'];
+        break;
+      }
+    }
+
+    // Search for the german flavor Text of the ability
+    for (var entry in jsonDecode(response.body)['flavor_text_entries']) {
+      if (entry['language']['name'] == 'de') {
+        germanFlavorText = entry['flavor_text'];
+      }
+    }
+
+    // Search for the german description
+    for (var entry in jsonDecode(response.body)['effect_entries']) {
+      if (entry['language']['name'] == 'de') {
+        germanDescription = entry['effect'];
+      }
+    }
+
+    _infosAlreadyFetched = true;
+
+    return true;
+  }
+
+  /// Fetches the german name of the ability
   Future<bool> fetchGermanName() async {
     if (germaneName != '') {
       return true;
@@ -75,7 +116,7 @@ class Ability {
     var url = Uri.parse(this.url);
     var response = await http.get(url);
 
-    for(var entry in jsonDecode(response.body)['names']) {
+    for (var entry in jsonDecode(response.body)['names']) {
       if (entry['language']['name'] == 'de') {
         germaneName = entry['name'];
         break;
@@ -93,6 +134,9 @@ class Pokemon {
   final String spriteBackDefault;
   final String species;
   final String speciesUrl;
+  int hp = 0;
+  int attack = 0;
+  int defense = 0;
   List<Ability> abilityList = [];
   String germanName = '';
 
@@ -107,6 +151,20 @@ class Pokemon {
       var ability = Ability.fromJson(entry);
       abilityList.add(ability);
     }
+
+    for (var entry in json['stats']) {
+      if (entry['stat']['name'] == 'hp') {
+        hp = entry['base_stat'];
+      } else if (entry['stat']['name'] == 'attack') {
+        attack = entry['base_stat'];
+      } else if (entry['stat']['name'] == 'defense') {
+        defense = entry['base_stat'];
+      }
+    }
+
+    debugPrint('$hp');
+    debugPrint('$attack');
+    debugPrint('$defense');
   }
 
   fetchGermanName() async {
@@ -125,7 +183,6 @@ class Pokemon {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   final List<Pokemon> _pokemonList = [];
 
   _MyHomePageState() {
@@ -163,17 +220,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     debugPrint('All Pokemon fetched');
-  }
-
-  void _incrementCounter() async {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
   }
 
   @override
@@ -249,14 +295,32 @@ class DetailPage extends StatelessWidget {
                 itemBuilder: (BuildContext context, int index) {
                   var ability = p.abilityList[index];
                   return FutureBuilder<bool>(
-                    future: ability.fetchGermanName(),
+                    future: ability.fetchInfos(),
                     builder: (context, AsyncSnapshot<bool> snapshot) {
                       if (snapshot.hasData) {
                         return ListTile(
                           title: Text(ability.germaneName),
+                          subtitle: Text(ability.germanFlavorText),
+                          onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) => AlertDialog(
+                                      title: Text(ability.germaneName),
+                                      content: Text(ability.germanDescription),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: const Text('Schließen'),
+                                        ),
+                                      ],
+                                    ));
+                          },
                         );
                       } else {
-                        return const CircularProgressIndicator();
+                        return Row(
+                          children: const [CircularProgressIndicator()],
+                        );
                       }
                     },
                   );
