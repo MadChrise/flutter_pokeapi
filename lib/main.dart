@@ -10,7 +10,7 @@ import 'package:flutter/rendering.dart';
 // TODO: Save Pokemon local on Device
 // TODO: Add Search for Pokemon
 // TODO: Find out how to use the SimpleDialog withina function to reduce code complexity
-// TODO: Create own files for Pokemon/Ability
+// TODO: Create own files for Pokemon/Abilityx
 
 void main() {
   // debugPaintSizeEnabled = true;
@@ -270,6 +270,23 @@ class DetailPage extends StatelessWidget {
   const DetailPage({required this.p, Key? key}) : super(key: key);
   final Pokemon p;
 
+  Future<T?> showMyDialog<T>(
+      BuildContext context, Ability ability, String buttonText) async {
+    return await showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(ability.germaneName),
+        content: Text(ability.germanDescription),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(buttonText),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -305,24 +322,11 @@ class DetailPage extends StatelessWidget {
                     builder: (context, AsyncSnapshot<bool> snapshot) {
                       if (snapshot.hasData) {
                         return ListTile(
-                          title: Text(ability.germaneName),
-                          subtitle: Text(ability.germanFlavorText),
-                          onTap: () {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) => AlertDialog(
-                                      title: Text(ability.germaneName),
-                                      content: Text(ability.germanDescription),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                          child: const Text('Schließen'),
-                                        ),
-                                      ],
-                                    ));
-                          },
-                        );
+                            title: Text(ability.germaneName),
+                            subtitle: Text(ability.germanFlavorText),
+                            onTap: () {
+                              showMyDialog(context, ability, 'Schließen');
+                            });
                       } else {
                         return Row(
                           children: const [CircularProgressIndicator()],
