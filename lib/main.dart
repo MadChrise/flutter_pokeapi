@@ -1,8 +1,5 @@
 import 'dart:convert';
-import 'dart:ffi';
-import 'dart:io';
 
-import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -13,7 +10,7 @@ import 'package:flutter/rendering.dart';
 // TODO: Create own files for Pokemon/Abilityx
 
 void main() {
-  // debugPaintSizeEnabled = true;
+  //debugPaintSizeEnabled = true;
   runApp(const MyApp());
 }
 
@@ -167,10 +164,6 @@ class Pokemon {
         defense = entry['base_stat'];
       }
     }
-
-    debugPrint('$hp');
-    debugPrint('$attack');
-    debugPrint('$defense');
   }
 
   fetchGermanName() async {
@@ -250,7 +243,6 @@ class _MyHomePageState extends State<MyHomePage> {
             leading: Image.network(p.spriteFrontDefault),
             title: Text(p.germanName),
             onTap: () {
-              var name = p.germanName;
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => DetailPage(p: p)));
             },
@@ -310,6 +302,51 @@ class DetailPage extends StatelessWidget {
             children: [
               Image.network(p.spriteFrontDefault),
               Image.network(p.spriteBackDefault),
+            ],
+          ),
+          Row(
+            children: [
+              Flexible(
+                flex: 1,
+                fit: FlexFit.tight,
+                child: Text('Gesundheit: ${p.hp}'),
+              ),
+              Flexible(
+                flex: 2,
+                fit: FlexFit.tight,
+                child: LinearProgressIndicator(
+                  value: p.hp.toDouble() / 100,
+                  color: Colors.red,
+                ),
+              )
+            ],
+          ),
+          Row(
+            children: [
+              Flexible(
+                flex: 1,
+                fit: FlexFit.tight,
+                child: Text('Angriff: ${p.attack}'),
+              ),
+              Flexible(
+                flex: 2,
+                fit: FlexFit.tight,
+                child: LinearProgressIndicator(
+                    value: p.attack.toDouble() / 100, color: Colors.blue),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Flexible(flex: 1, fit: FlexFit.tight, child: Text('Verteidigung: ${p.defense}'),),
+              Flexible(
+                flex: 2,
+                fit: FlexFit.tight,
+                child: LinearProgressIndicator(
+                  value: p.defense.toDouble() / 100,
+                  color: Colors.green,
+                ),
+              ),
             ],
           ),
           Expanded(
